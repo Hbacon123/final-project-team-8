@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Helper</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+{
+  "name": "final-project-team-8",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;let feedbackReport = "";
+
+function generateResume() {
+  const skills =
+    document.getElementById("skills").value ||
+    "communication, organization, teamwork, and problem solving";
+  const experience =
+    document.getElementById("experience").value ||
+    "customer service, academic projects, and workplace responsibilities";
+  const activities =
+    document.getElementById("activities").value ||
+    "clubs, volunteer work, leadership, or campus involvement";
+
+  const output = `
+Professional Summary:
+Motivated candidate with experience in ${experience}. Skilled in ${skills}. Strong background in ${activities}.
+
+Sample Resume Bullets:
+• Applied ${skills} to complete responsibilities efficiently and support team goals.
+• Gained hands-on experience in ${experience} while managing multiple priorities.
+• Demonstrated leadership, reliability, and professionalism through ${activities}.
+`;
+
+  document.getElementById("resumeOutput").style.display = "block";
+  document.getElementById("resumeOutput").innerText = output;
+}
+
+function analyzeResume() {
+  const resume = document.getElementById("resumeText").value.trim();
+
+  if (!resume) {
+    alert("Please paste your resume text first.");
+    return;
+  }
+
+  const strengths = [];
+  const fixes = [];
+  const tips = [];
+
+  if (resume.length > 400) {
+    strengths.push("Your resume includes a solid amount of information.");
+  } else {
+    fixes.push("Your resume may be too short or missing important details.");
+    tips.push("Add more specific responsibilities, skills, and accomplishments.");
+  }
+
+  if (resume.match(/\d/)) {
+    strengths.push("You included numbers, which helps show measurable impact.");
+  } else {
+    fixes.push("Your resume does not include measurable numbers.");
+    tips.push(
+      "Add numbers such as customers served, team size, sales amounts, or percentages."
+    );
+  }
+
+  if (resume.toLowerCase().includes("skills")) {
+    strengths.push("You included a Skills section.");
+  } else {
+    fixes.push("You may be missing a clear Skills section.");
+    tips.push(
+      "Add a Skills section with software, communication, leadership, and job-related keywords."
+    );
+  }
+
+  if (resume.includes("I ") || resume.includes("my ")) {
+    fixes.push("Your resume uses first-person language.");
+    tips.push(
+      "Remove words like I, me, and my. Resume bullets should be direct and action-focused."
+    );
+  }
+
+  document.getElementById("resultsSection").style.display = "block";
+  document.getElementById("strengths").innerHTML = makeList(strengths);
+  document.getElementById("fixes").innerHTML = makeList(fixes);
+  document.getElementById("tipsOutput").innerHTML = makeList(tips);
+  document.getElementById("highlightedResume").innerHTML = highlightIssues(resume);
+
+  feedbackReport = `AI Resume Feedback Report
+
+WHAT LOOKS STRONG:
+${strengths.map((item) => "- " + item).join("\n")}
+
+WHAT NEEDS TO BE FIXED:
+${fixes.map((item) => "- " + item).join("\n")}
+
+TIPS TO IMPROVE:
+${tips.map((item) => "- " + item).join("\n")}
+`;
+}
+
+function improveBulletPoint() {
+  const bulletEl = document.getElementById("bulletInput");
+  const outputEl = document.getElementById("bulletOutput");
+  const raw = (bulletEl.value || "").trim();
+
+  if (!raw) {
+    outputEl.style.display = "block";
+    outputEl.innerText = "Paste a bullet point first, then click Improve Bullet Point.";
+    return;
+  }
+
+  const cleaned = raw
+    .replace(/^[-•]\s*/, "")
+    .replace(/\bhelped\b/gi, "supported")
+    .replace(/\bworked on\b/gi, "contributed to")
+    .replace(/\bresponsible for\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const improved =
+    cleaned.charAt(0).toUpperCase() +
+    cleaned.slice(1) +
+    " while improving efficiency, communication, and service quality.";
+
+  outputEl.style.display = "block";
+  outputEl.innerText = `Original:\n${raw}\n\nImproved:\n${improved}`;
+}
+
+function analyzeAtsMatch() {
+  const resumeText = (document.getElementById("atsResumeText").value || "").toLowerCase();
+  const jobText = (document.getElementById("jobDescriptionText").value || "").toLowerCase();
+
+  if (!resumeText.trim() || !jobText.trim()) {
+    alert("Please paste both resume text and job description.");
+    return;
+  }
+
+  const keywordBank = [
+    "communication",
+    "leadership",
+    "customer service",
+    "teamwork",
+    "time management",
+    "problem solving",
+    "project management",
+    "microsoft office",
+    "excel",
+    "data entry",
+    "organization",
+    "scheduling",
+    "analysis",
+    "sales",
+    "collaboration",
+    "training",
+    "reporting",
+    "administrative support",
+  ];
+
+  const jdKeywords = keywordBank.filter((k) => jobText.includes(k));
+  const matched = jdKeywords.filter((k) => resumeText.includes(k));
+  const missing = jdKeywords.filter((k) => !resumeText.includes(k));
+
+  const suggestedPoints = missing.slice(0, 6).map(
+    (k) => `Add a bullet with measurable impact using "${k}" in a natural, truthful way.`
+  );
+
+  const scoreBase = jdKeywords.length || 1;
+  const matchScore = Math.round((matched.length / scoreBase) * 100);
+
+  document.getElementById("atsResults").style.display = "block";
+  document.getElementById("atsMatched").innerHTML = makeList(
+    matched.length ? matched : ["No direct matches found yet."]
+  );
+  document.getElementById("atsMissing").innerHTML = makeList(
+    missing.length ? missing : ["Great job. You covered the major keywords found in this posting."]
+  );
+  document.getElementById("atsPoints").innerHTML = makeList(
+    suggestedPoints.length
+      ? suggestedPoints
+      : ["Focus on stronger metrics (numbers/percentages) to improve recruiter visibility."]
+  );
+  document.getElementById("atsScoreOutput").innerText =
+    `Estimated ATS Keyword Match Score: ${matchScore}%\n` +
+    `Matched ${matched.length} of ${jdKeywords.length || 0} high-value keywords found in the job description.`;
+}
+
+function makeList(items) {
+  if (items.length === 0) {
+    return "<p>No major issues found.</p>";
+  }
+
+  return "<ul>" + items.map((item) => "<li>" + item + "</li>").join("") + "</ul>";
+}
+
+function highlightIssues(text) {
+  let highlighted = text;
+  highlighted = highlighted.replaceAll("I ", "<span class='highlight'>I </span>");
+  highlighted = highlighted.replaceAll("my ", "<span class='highlight'>my </span>");
+  highlighted = highlighted.replaceAll("helped", "<span class='highlight'>helped</span>");
+  highlighted = highlighted.replaceAll("worked", "<span class='highlight'>worked</span>");
+  highlighted = highlighted.replaceAll(
+    "responsible for",
+    "<span class='highlight'>responsible for</span>"
+  );
+  return highlighted;
+}
+
+function downloadFeedback() {
+  if (!feedbackReport) {
+    alert("Please analyze your resume first.");
+    return;
+  }
+
+  const element = document.createElement("a");
+  const file = new Blob([feedbackReport], { type: "text/plain" });
+
+  element.href = URL.createObjectURL(file);
+  element.download = "AI_Resume_Feedback_Report.txt";
+
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f6f8;
+  color: #111827;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+header {
+  background: #111827;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.navbar {
+  max-width: 1200px;
+  margin: auto;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+}
+
+.brand img {
+  max-height: 72px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: #ffffff;
+  padding: 4px;
+}
+
+.brand-title {
+  font-size: 20px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+nav a:hover {
+  background: #374151;
+}
+
+.hero {
+  background: linear-gradient(135deg, #111827, #1e3a8a);
+  color: white;
+  text-align: center;
+  padding: 75px 20px;
+}
+
+.hero h1 {
+  font-size: 46px;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  max-width: 850px;
+  margin: auto;
+  font-size: 19px;
+}
+
+main {
+  max-width: 1150px;
+  margin: auto;
+  padding: 44px 22px;
+}
+
+section {
+  background: white;
+  padding: 34px;
+  margin-bottom: 36px;
+  border-radius: 20px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e8edf5;
+  scroll-margin-top: 105px;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 31px;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+h3 {
+  color: #1f2937;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+textarea,
+input {
+  width: 100%;
+  padding: 13px;
+  margin: 10px 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  font-size: 15px;
+}
+
+button {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  margin: 8px 8px 8px 0;
+  font-size: 15px;
+}
+
+button:hover {
+  background: #374151;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  background: #fbfcff;
+  padding: 20px;
+  border-radius: 14px;
+  border-left: 5px solid #2563eb;
+  border: 1px solid #e6ecf6;
+}
+
+.warning {
+  border-left-color: #dc2626;
+  background: #fee2e2;
+}
+
+.success {
+  border-left-color: #16a34a;
+  background: #dcfce7;
+}
+
+.tip {
+  border-left-color: #9333ea;
+  background: #f3e8ff;
+}
+
+.output {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  margin-top: 16px;
+  border: 1px solid #e4eaf5;
+}
+
+.highlight {
+  background: #fef08a;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.before {
+  background: #fee2e2;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.after {
+  background: #dcfce7;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.upload-box {
+  border: 2px dashed #2563eb;
+  background: #eff6ff;
+  padding: 25px;
+  border-radius: 14px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+footer {
+  background: #111827;
+  color: white;
+  text-align: center;
+  padding: 25px;
+  margin-top: 35px;
+}
+
+.footer-logo {
+  max-height: 72px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: #ffffff;
+  padding: 4px;
+}
+
+.section-lead {
+  margin: 0 0 18px;
+  color: #334155;
+  font-size: 17px;
+  max-width: 900px;
+}
+
+.prose-flow {
+  border-top: 1px solid #e8edf5;
+  padding-top: 18px;
+}
+
+.prose-flow p {
+  margin: 0 0 14px;
+  color: #334155;
+  max-width: 980px;
+}
+
+.prose-flow h3 {
+  margin-top: 24px;
+}
+
+.results-panel {
+  margin-top: 20px;
+  padding-top: 8px;
+}
+
+.results-title {
+  margin-top: 18px;
+}
+
+.results-grid {
+  margin-top: 14px;
+}
+
+.result-card {
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  border-left-width: 6px;
+}
+
+@media (max-width: 850px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav {
+    justify-content: flex-start;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  section {
+    padding: 24px;
+  }
+
+  .section-lead {
+    font-size: 16px;
+  }
+}
+
+/* iPhone/Safari compatibility: prevent broken scaling, overflow, and image sizing issues */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.brand img,
+.footer-logo,
+header img,
+nav img,
+footer img {
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+}
+
+header {
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+nav {
+  width: 100%;
+}
+
+footer {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  body {
+    width: 100%;
+  }
+
+  header,
+  footer,
+  nav,
+  main,
+  section {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  nav {
+    flex-wrap: wrap;
+  }
+
+  .brand img,
+  .footer-logo {
+    max-width: 150px;
+  }
+}
+
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.10"
+  }
+}
+
+<header>
+  <div class="navbar">
+    <div class="brand">
+      <img src="./logo.png" alt="AI Resume Helper Logo" />
+      <div class="brand-title">AI Resume Helper</div>
+    </div>
+
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#builder">Resume Builder</a>
+      <a href="#checker">Resume Checker</a>
+      <a href="#bullet-helper">Bullet Helper</a>
+      <a href="#ats-match">ATS Match</a>
+      <a href="#tips">Resume Tips</a>
+      <a href="#ai-hiring">AI in Hiring</a>
+      <a href="#samples">Sample Resumes</a>
+      <a href="#ethics">Ethics</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="home">
+  <h1>Build a Stronger Resume with AI</h1>
+  <p>
+    This website helps users create resume content, improve bullet points, check for common issues,
+    and understand how artificial intelligence is changing the hiring process.
+  </p>
+</div>
+
+<main>
+
+  <section id="builder">
+    <h2>Resume Builder Tool</h2>
+    <p>
+      Enter your skills, experience, and activities. The tool will create sample resume content that can be edited and personalized.
+    </p>
+
+    <textarea id="skills" rows="3" placeholder="Enter your skills..."></textarea>
+    <textarea id="experience" rows="3" placeholder="Enter your work, volunteer, or school experience..."></textarea>
+    <textarea id="activities" rows="3" placeholder="Enter clubs, activities, awards, or leadership roles..."></textarea>
+
+    <button onclick="generateResume()">Generate Resume Content</button>
+
+    <div id="resumeOutput" class="output" style="display:none;"></div>
+  </section>
+
+  <section id="checker">
+    <h2>AI Resume Checker</h2>
+    <p class="section-lead">
+      Paste your current resume text to get quick feedback on strength, gaps, and language quality. The checker is designed to give practical revision points you can apply immediately.
+    </p>
+
+    <textarea id="resumeText" rows="9" placeholder="Paste your resume text here..."></textarea>
+
+    <button onclick="analyzeResume()">Analyze Resume</button>
+    <button onclick="downloadFeedback()">Download Feedback Report</button>
+
+    <div id="resultsSection" class="results-panel" style="display:none;">
+      <h3 class="results-title">Resume Review Summary</h3>
+      <div class="grid results-grid">
+        <div class="card success result-card">
+          <h3>What Looks Strong</h3>
+          <div id="strengths"></div>
+        </div>
+
+        <div class="card warning result-card">
+          <h3>What Needs to Be Fixed</h3>
+          <div id="fixes"></div>
+        </div>
+
+        <div class="card tip result-card">
+          <h3>Tips to Improve</h3>
+          <div id="tipsOutput"></div>
+        </div>
+      </div>
+
+      <h3 class="results-title">Highlighted Resume Review</h3>
+      <div id="highlightedResume" class="output"></div>
+    </div>
+  </section>
+
+  <section id="bullet-helper">
+    <h2>Improve Resume Bullet Points</h2>
+    <p>
+      Paste one resume bullet and get a stronger version with action verbs, clearer impact, and professional wording.
+    </p>
+    <textarea id="bulletInput" rows="4" placeholder="Example: Helped customers and worked at the front desk."></textarea>
+    <button onclick="improveBulletPoint()">Improve Bullet Point</button>
+    <div id="bulletOutput" class="output" style="display:none;"></div>
+  </section>
+
+  <section id="ats-match">
+    <h2>Resume vs Job Description Match (ATS Flag Points)</h2>
+    <p>
+      Paste your resume and a target job description. This tool suggests high-value points and keywords that can help your resume get flagged for recruiter review.
+    </p>
+
+    <textarea id="atsResumeText" rows="7" placeholder="Paste your resume text..."></textarea>
+    <textarea id="jobDescriptionText" rows="7" placeholder="Paste the job description..."></textarea>
+
+    <button onclick="analyzeAtsMatch()">Generate ATS Flag Points</button>
+
+    <div id="atsResults" style="display:none;">
+      <div class="grid">
+        <div class="card success">
+          <h3>Already Matching Keywords</h3>
+          <div id="atsMatched"></div>
+        </div>
+        <div class="card warning">
+          <h3>Missing High-Value Keywords</h3>
+          <div id="atsMissing"></div>
+        </div>
+        <div class="card tip">
+          <h3>Suggested Points to Add</h3>
+          <div id="atsPoints"></div>
+        </div>
+      </div>
+      <div id="atsScoreOutput" class="output"></div>
+    </div>
+  </section>
+
+  <section id="tips">
+    <h2>In-Depth Resume Formatting and Writing Guidance</h2>
+    <p class="section-lead">
+      Strong resumes are not just about listing experiences; they are about presenting those experiences clearly and in a way that is easy for both people and systems to understand.
+    </p>
+    <div class="prose-flow">
+      <h3>Readability Comes First</h3>
+      <p>
+        Start with a layout that is clean and predictable. Use consistent spacing, clear section headings, and readable fonts so a recruiter can scan the page in seconds. A resume should feel organized at a glance, with your most relevant qualifications appearing early. When formatting is inconsistent, even strong experience can look less polished than it really is.
+      </p>
+      <p>
+        Keep visual clutter low by avoiding too many text styles, decorative icons, or dense blocks of content. If your resume looks crowded, separate ideas with whitespace and shorten long bullet points. A balanced layout improves readability and helps your key accomplishments stand out.
+      </p>
+      <h3>Write Bullet Points with Purpose</h3>
+      <p>
+        Every bullet point should communicate action and impact. Instead of describing duties only, show what you contributed and what improved because of your work. Good bullets often follow a simple pattern: action verb, task, and result. This approach helps your experience sound confident and specific rather than generic.
+      </p>
+      <p>
+        Measurable detail is especially important. Numbers such as customer volume, time saved, sales growth, project size, or completion speed give context to your work. Even when exact metrics are not available, adding scale and scope makes your experience more believable and easier to evaluate.
+      </p>
+      <h3>Match the Role Without Losing Your Voice</h3>
+      <p>
+        Tailoring your resume means aligning wording with the job description while staying honest about your background. If a posting emphasizes collaboration, data entry, scheduling, or customer support, those terms should appear naturally in your resume when they truly reflect your experience. This helps with ATS visibility and makes your resume feel relevant to the role.
+      </p>
+      <p>
+        Finally, proofread with intention. Review for grammar, tense consistency, and repeated phrases. AI tools can help identify rough spots, but your final pass matters most because it ensures the resume still sounds like you and accurately represents your work.
+      </p>
+    </div>
+  </section>
+
+  <section id="ai-hiring">
+    <h2>AI in Resume Screening and Hiring</h2>
+    <p class="section-lead">
+      Once your resume is submitted, it is often reviewed by both software and people. Understanding how AI fits into that process helps you write more strategically.
+    </p>
+    <div class="prose-flow">
+      <h3>How AI Helps Applicants and Recruiters</h3>
+      <p>
+        AI can support resume structure, wording, and clarity by identifying weak phrasing, repeated language, and missing keywords connected to a target role. For applicants, this can save time and reduce guesswork. Instead of editing from scratch every time, you can use AI feedback to quickly tighten bullet points and align your resume with specific responsibilities in a posting.
+      </p>
+      <p>
+        On the hiring side, ATS and AI-assisted tools help teams organize large applicant pools, sort by qualifications, and create faster shortlists. This can improve consistency and reduce delays, especially when companies receive hundreds of applications. Used well, these systems make early-stage review more manageable and allow recruiters to focus their attention where it matters most.
+      </p>
+      <h3>Benefits of AI Support</h3>
+      <p>
+        One of the biggest advantages is efficiency. AI tools can generate revision ideas quickly, highlight gaps, and suggest phrasing that better matches role expectations. They can also help users tailor multiple versions of a resume for different industries by adjusting keywords and emphasis without rewriting every section from the beginning.
+      </p>
+      <p>
+        AI can also improve organization by turning scattered notes into structured content. For students and early-career applicants, this is especially useful when translating class projects, part-time work, and volunteer roles into stronger professional statements.
+      </p>
+      <h3>Downsides and Risks to Watch</h3>
+      <p>
+        AI is not neutral by default. If hiring systems are trained on biased historical patterns, they may unintentionally reinforce unfair outcomes. Overreliance on keyword matching can also miss capable candidates whose resumes use different wording but show equivalent skills.
+      </p>
+      <p>
+        Privacy is another concern. Resumes contain personal information, so users should be selective about where they upload documents and avoid sharing unnecessary details. There is also the risk of generic writing: when AI suggestions are copied without editing, resumes can sound repetitive and less authentic. Human review remains essential to ensure your resume is accurate, specific, and true to your real experience.
+      </p>
+    </div>
+  </section>
+
+  <section id="samples">
+    <h2>Sample Resume Improvements</h2>
+
+    <div class="grid">
+      <div class="before">
+        <h3>Before</h3>
+        <p>Worked at front desk and helped customers.</p>
+      </div>
+
+      <div class="after">
+        <h3>Improved</h3>
+        <p>
+          Provided front-desk support by assisting customers, answering questions, organizing records,
+          and maintaining a professional service environment.
+        </p>
+      </div>
+
+      <div class="before">
+        <h3>Before</h3>
+        <p>Was responsible for social media posts.</p>
+      </div>
+
+      <div class="after">
+        <h3>Improved</h3>
+        <p>
+          Created and scheduled social media content to support brand awareness, audience engagement,
+          and consistent online communication.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="ethics">
+    <h2>Ethical Use of AI for Resumes</h2>
+    <p class="section-lead">
+      The strongest way to use AI is as a coaching tool, not a replacement for your judgment.
+    </p>
+    <div class="prose-flow">
+      <p>
+        Ethical resume writing means your final document should still reflect your real abilities, accomplishments, and growth. AI can help rephrase content, improve tone, and surface missing details, but it should not invent experience or inflate your qualifications. Recruiters are not only looking for polished wording; they are looking for trust and credibility.
+      </p>
+      <p>
+        A good rule is simple: if you cannot explain or defend a statement in an interview, it should not be on your resume. Use AI to improve clarity and structure, then review every line to make sure it sounds natural and truthful. That balance gives you the benefits of technology while protecting your integrity as an applicant.
+      </p>
+      <p>
+        Responsible AI use also includes protecting your data and being thoughtful about automation. Before sharing resume content with any tool, check where your information goes and whether it is stored. The goal is to use AI intentionally: draft faster, edit smarter, and still keep the final decisions human.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <img src="./logo.png" alt="AI Resume Helper Logo" class="footer-logo" />
+  <p>AI Resume Helper | Educational Website Project</p>
+</footer>
+
+<script src="./script.js"></script>
+
+</body>
+</html>
